@@ -1,4 +1,5 @@
 
+import os
 import sys
 import logging
 
@@ -20,13 +21,14 @@ class Program(object):
 
     @classmethod
     def load_jobfile(cls):
-        spec = util.find_spec('jobfile', [])
+        sys.path.insert(0, os.getcwd())
+        spec = util.find_spec('jobfile')
         if not spec:
-            logger.warning('no jobfile in current directory')
+            logger.warning('no jobfile in current directory (spec)')
             return
         mod = util.module_from_spec(spec)
         if not mod:
-            logger.warning('no jobfile in current directory')
+            logger.warning('no jobfile in current directory (module)')
             return
         spec.loader.exec_module(mod)
 

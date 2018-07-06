@@ -98,7 +98,7 @@ class Cmd(object):
     def pipe(self, cmd):
         return Pipe(self, cmd)
 
-    def clone(self):
+    def _clone(self):
         return copy.copy(self)
 
 
