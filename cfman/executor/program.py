@@ -54,13 +54,16 @@ class Program(object):
             # TODO: parse job params here?
             self._jobs.append((_job, job_params))
         # TODO: context factory by host type (ssh://root@test, localhost)
-        for _job, job_params in self._jobs:
-            for host in self._hosts:
-                if host == 'localhost':
-                    ctx = Local()
-                else:
-                    ctx = Remote(host)
-                _job(ctx, *job_params)
+        if self._jobs:
+            for _job, job_params in self._jobs:
+                for host in self._hosts:
+                    if host == 'localhost':
+                        ctx = Local()
+                    else:
+                        ctx = Remote(host)
+                    _job(ctx, *job_params)
+        else:
+            print(job.registry)
 
     @classmethod
     def parse_global_opts(cls, *args):

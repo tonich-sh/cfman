@@ -46,13 +46,27 @@ class Job(object):
         return params
 
 
-def job(func):
+def job(f=None, module=None):
 
-    j = Job(func)
+    def outer(func):
+        nonlocal module
+        j = Job(func)
+        if module is None:
+            module = func.__module__
+        if module == 'jobfile':
+            module = ''
+        if module:
+            job_name = '{}.{}'.format(module, func.__name__)
+        else:
+            job_name = '{}'.format(func.__name__)
+        registry[job_name] = j
 
-    registry[func.__name__] = j
+        def deco(*args, **kwargs):
+            return j(*args, **kwargs)
 
-    def deco(*args, **kwargs):
-        return j(*args, **kwargs)
+        return deco
 
-    return deco
+    if callable(f):
+        return outer(f)
+
+    return outer
