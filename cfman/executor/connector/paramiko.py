@@ -13,15 +13,16 @@ class ParamikoConnection(BaseConnection):
 
     def __init__(self, **kwargs):
         self._ssh = None  # type: SSHClient
+
+        self.host = None
+        self.user = 'root'
+
         host = kwargs.get('host', None)
         if host:
             splitted = host.split('@')
             self.host = splitted.pop(-1)
             if splitted:
                 self.user = splitted[-1]
-        else:
-            self.host = None
-            self.user = 'root'
         self._port = SSH_PORT
 
     def connect(self):
