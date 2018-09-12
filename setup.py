@@ -10,7 +10,12 @@ setuptools.setup(
     license='Apache 2.0',
     author='Anton Schur',
     author_email='tonich.sh@gmail.com',
-    packages=['cfman'],
+    packages=[
+        'cfman',
+        'cfman.executor',
+        'cfman.cmdbuilder',
+        'cfman.joblib'
+    ],
     install_requires=[
         'paramiko>=2.4',
         'jinja2'
