@@ -12,9 +12,14 @@ setuptools.setup(
     author_email='tonich.sh@gmail.com',
     packages=[
         'cfman',
-        'cfman.executor',
         'cfman.cmdbuilder',
-        'cfman.joblib'
+        'cfman/cmdbuilder/commands',
+        'cfman/joblib',
+        'cfman/joblib/require',
+        'cfman/executor',
+        'cfman/executor/connector',
+        'cfman/tests',
+        'cfman/tests/commands',
     ],
     install_requires=[
         'paramiko>=2.4',
