@@ -1,6 +1,7 @@
 
 from cfman.cmdbuilder.commands import file
 from cfman.cmdbuilder.compiler import compiler
+from cfman.executor.context import Local
 
 
 def test_mkdir():
@@ -15,6 +16,21 @@ def test_mkdir():
     mkdir = file.Mkdir('/tmp/test\'s test')
     s, params = compiler(mkdir, None)
     assert s == 'mkdir \'/tmp/test\'"\'"\'s test\''
+
+
+def test_mktemp():
+    mktemp = file.Mktemp()
+    s, params = compiler(mktemp, None)
+    assert s == 'mktemp XXX'
+    mktemp = file.Mktemp().directory().tmpdir()
+    s, params = compiler(mktemp, None)
+    assert s == 'mktemp --directory --tmpdir XXX'
+
+
+def test_cd():
+    cd = file.Cd('/tmp')
+    s, params = compiler(cd, None)
+    assert s == 'cd /tmp'
 
 
 def test_stat():

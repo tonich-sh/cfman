@@ -21,14 +21,14 @@ def replace(ctx, filename, before, after, limit=None, backup='.bak', flags=''):
     ctx.run(file.Sed(before, after, filename))
 
 
-def temp_dir(ctx, template=None):
+def temp_dir(ctx, template=None, cleanup=True):
     path = ctx.run(file.Mktemp(template).directory().tmpdir()).stdout.strip()
-    return TempDir(path, ctx=ctx)
+    return TempDir(path, ctx=ctx, cleanup=cleanup)
 
 
-def temp_file(ctx):
+def temp_file(ctx, cleanup=True):
     path = ctx.run(file.Mktemp().tmpdir()).stdout.strip()
-    return TempDir(path, ctx=ctx)
+    return TempDir(path, ctx=ctx, cleanup=cleanup)
 
 
 def remove(ctx, filename, recursive=False):
@@ -47,13 +47,15 @@ class TempDir(str):
     def __new__(cls, value, *args, **kwargs):
         s = super(TempDir, cls).__new__(cls, value)
         setattr(s, 'ctx', kwargs.get('ctx', None))
+        setattr(s, 'cleanup', kwargs.get('cleanup', True))
         return s
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
-        self.ctx.run(file.Rm(self).force().recursive())
+        if self.cleanup:
+            self.ctx.run(file.Rm(self).force().recursive())
 
 
 def md5sum(ctx, path):

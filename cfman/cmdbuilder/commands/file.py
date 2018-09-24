@@ -3,7 +3,7 @@ import os
 from shlex import quote
 
 from ..compiler import compiler
-from ..cmd import Cmd
+from ..cmd import Cmd, LongOpt
 
 
 class BasePathCmd(Cmd):
@@ -44,15 +44,20 @@ class Mkdir(BasePathCmd):
 class Mktemp(BasePathCmd):
     __slots__ = []
 
-    def __init__(self, path='XXX'):
+    def __init__(self, path=None):
+        if path is None:
+            path = 'XXXXX'
         super(Mktemp, self).__init__('mktemp', path)
 
     def directory(self):
         self._opts.append('--directory')
         return self
 
-    def tmpdir(self):
-        self._opts.append('--tmpdir')
+    def tmpdir(self, directory=None):
+        if directory is None:
+            self._opts.append('--tmpdir')
+        else:
+            self._opts.append(LongOpt('--tmpdir', directory))
         return self
 
     def template(self, template):

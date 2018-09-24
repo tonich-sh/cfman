@@ -98,11 +98,21 @@ class Context(object):
 
 class Local(Context):
 
+    def __init__(self):
+        super(Local, self).__init__('localhost')
+        self._cwd = None
+
     def _get_current_user(self):
         return pwd.getpwuid(os.getuid())[0]
 
     def lrun(self, cmd: Cmd):
         return Local.run(self, cmd)
+
+    @contextmanager
+    def cd(self, path):
+        self._cwd = path
+        yield
+        self._cwd = None
 
     def run(self, cmd: Cmd, **kwargs):
         rcmd = self._prepare_cmd(cmd, **kwargs)
@@ -118,6 +128,7 @@ class Local(Context):
             stdout=PIPE,
             stderr=PIPE,
             stdin=PIPE,
+            cwd=self._cwd
         )
         exception = None
         stdout = ''

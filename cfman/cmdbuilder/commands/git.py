@@ -5,6 +5,40 @@ from ..compiler import compiler
 from ..cmd import Cmd, LongOpt, Opt
 
 
+class GitSubcommand(Cmd):
+    pass
+
+
+class GitClone(GitSubcommand):
+    __slots__ = ['_repo', '_dir']
+
+    def __init__(self, git, repo, directory=None):
+        super(GitClone, self).__init__('clone')
+        self._git = git
+        self._repo = repo
+        if directory is None:
+            self._dir = './'
+        else:
+            self._dir = directory
+
+    @property
+    def opts(self):
+        return self._opts + [self._repo, self._dir]
+
+    def depth(self, depth):
+        self._opts.append(LongOpt('--depth', depth))
+
+
+@compiler.when(GitSubcommand)
+def compile_git_subcommand(compiler, cmd: GitSubcommand, ctx, state):
+    compiler(cmd._git, ctx, state)
+
+    state.opts.append(quote(cmd.cmd))
+    for opt in cmd.opts:
+        compiler(opt, ctx, state)
+
+
+# TODO: classes for git subcommands
 class Git(Cmd):
     __slots__ = ['_subcmd', '_subopts']
 
@@ -34,6 +68,9 @@ class Git(Cmd):
         self._subopts.append(rev)
         return self
 
+    def clone(self, repo, directory=None):
+        return GitClone(self, repo, directory)
+
 
 @compiler.when(Git)
 def compile_git(compiler, cmd: Git, ctx, state):
@@ -42,6 +79,7 @@ def compile_git(compiler, cmd: Git, ctx, state):
     for opt in cmd.opts:
         compiler(opt, ctx, state)
 
-    state.opts.append(quote(cmd._subcmd))
-    for opt in cmd._subopts:
-        compiler(opt, ctx, state)
+    if cmd._subcmd:
+        state.opts.append(quote(cmd._subcmd))
+        for opt in cmd._subopts:
+            compiler(opt, ctx, state)
