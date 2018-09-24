@@ -22,8 +22,7 @@ setuptools.setup(
         'cfman/tests/commands',
     ],
     install_requires=[
-        'paramiko>=2.4',
-        'jinja2'
+        'paramiko>=2.4'
     ],
     entry_points={
         'console_scripts': [
