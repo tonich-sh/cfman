@@ -45,6 +45,8 @@ class Program(object):
         logger.debug('global_opts: {}'.format(global_opts))
         if global_opts.hosts is not None:
             self._hosts = map(lambda x: x.strip(), global_opts.hosts.split(','))
+        else:
+            self._hosts = ['localhost']
         # job params
         jobs_dict = self.parse_job_opts(*tail)
         for job_name, job_params in jobs_dict.items():
