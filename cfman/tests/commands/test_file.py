@@ -21,10 +21,10 @@ def test_mkdir():
 def test_mktemp():
     mktemp = file.Mktemp()
     s, params = compiler(mktemp, None)
-    assert s == 'mktemp XXX'
+    assert s == 'mktemp XXXXX'
     mktemp = file.Mktemp().directory().tmpdir()
     s, params = compiler(mktemp, None)
-    assert s == 'mktemp --directory --tmpdir XXX'
+    assert s == 'mktemp --directory --tmpdir XXXXX'
 
 
 def test_cd():

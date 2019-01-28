@@ -2,19 +2,14 @@
 from shlex import quote
 
 from ..compiler import compiler
-from ..cmd import Cmd, LongOpt, Opt
+from ..cmd import Cmd, LongOpt, Opt, Subcommand
 
 
-class GitSubcommand(Cmd):
-    pass
-
-
-class GitClone(GitSubcommand):
+class GitClone(Subcommand):
     __slots__ = ['_repo', '_dir']
 
     def __init__(self, git, repo, directory=None):
-        super(GitClone, self).__init__('clone')
-        self._git = git
+        super(GitClone, self).__init__('clone', git)
         self._repo = repo
         if directory is None:
             self._dir = './'
@@ -27,15 +22,6 @@ class GitClone(GitSubcommand):
 
     def depth(self, depth):
         self._opts.append(LongOpt('--depth', depth))
-
-
-@compiler.when(GitSubcommand)
-def compile_git_subcommand(compiler, cmd: GitSubcommand, ctx, state):
-    compiler(cmd._git, ctx, state)
-
-    state.opts.append(quote(cmd.cmd))
-    for opt in cmd.opts:
-        compiler(opt, ctx, state)
 
 
 # TODO: classes for git subcommands

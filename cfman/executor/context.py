@@ -80,7 +80,7 @@ class Context(object):
         self.command_chain.pop()
 
     @abc.abstractmethod
-    def run(self, cmd: Cmd, **kwargs):
+    def run(self, cmd: Cmd, **kwargs) -> Result:
         raise NotImplementedError
 
     @abc.abstractmethod

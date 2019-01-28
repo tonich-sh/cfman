@@ -102,6 +102,15 @@ class Cmd(object):
         return copy.copy(self)
 
 
+class Subcommand(Cmd):
+    __slots__ = ['_parent', '_global_opts']
+
+    def __init__(self, cmd, parent):
+        super(Subcommand, self).__init__(cmd)
+        self._parent = parent
+        self._global_opts = []
+
+
 @compiler.when(str)
 def compile_str(compiler, cmd, ctx, state):
     state.opts.append(quote(cmd))
@@ -110,6 +119,19 @@ def compile_str(compiler, cmd, ctx, state):
 @compiler.when(Cmd)
 def compile_cmd(compiler, cmd, ctx, state):
     state.opts.append(quote(cmd.cmd))
+    for opt in cmd.opts:
+        compiler(opt, ctx, state)
+
+
+@compiler.when(Subcommand)
+def compile_git_subcommand(compiler, cmd: Subcommand, ctx, state):
+    compiler(cmd._parent, ctx, state)
+
+    for opt in cmd._global_opts:
+        compiler(opt, ctx, state)
+
+    state.opts.append(quote(cmd.cmd))
+
     for opt in cmd.opts:
         compiler(opt, ctx, state)
 
