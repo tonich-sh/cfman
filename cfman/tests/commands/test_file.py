@@ -33,6 +33,18 @@ def test_cd():
     assert s == 'cd /tmp'
 
 
+def test_mv():
+    mv = file.Mv('/tmp/file1', '/tmp/file 2')
+    s, params = compiler(mv, None)
+    assert s == 'mv /tmp/file1 \'/tmp/file 2\''
+
+
+def test_cp():
+    cp = file.Cp('/tmp/file1', '/tmp/file 2')
+    s, params = compiler(cp, None)
+    assert s == 'cp /tmp/file1 \'/tmp/file 2\''
+
+
 def test_stat():
     stat = file.Stat('/tmp/test1')
     s, params = compiler(stat, None)
@@ -55,3 +67,9 @@ def test_sed():
     grep = file.Sed('test1', 'test2', '/tmp/test1')
     s, params = compiler(grep, None)
     assert s == 'sed \'s/test1/test2/g\' -i /tmp/test1'
+
+
+def test_diff():
+    diff = file.Diff().unified(5).files('/tmp/file1', '/tmp/file2')
+    s, params = compiler(diff, None)
+    assert s == 'diff --unified=5 /tmp/file1 /tmp/file2'

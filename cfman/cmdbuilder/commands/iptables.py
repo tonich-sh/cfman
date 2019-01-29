@@ -2,7 +2,7 @@
 from shlex import quote
 
 from ..compiler import compiler
-from ..cmd import Cmd, LongOpt, Opt, Subcommand
+from ..cmd import Cmd, LongOpt, Opt, Subcommand, Prefix
 
 
 class IptablesCommand(Subcommand):
@@ -27,24 +27,74 @@ class IptablesList(Subcommand):
         return self
 
 
-@compiler.when(IptablesCommand)
-def compile_git_subcommand(compiler, cmd: IptablesCommand, ctx, state):
-    compiler(cmd._parent, ctx, state)
-
-    for opt in cmd._global_opts:
-        compiler(opt, ctx, state)
-
-    state.opts.append(quote(cmd.cmd))
-
-    for opt in cmd.opts:
-        compiler(opt, ctx, state)
-
-
-class Rule(Cmd):
-    __slots__ = []
+class Rule(object):
+    __slots__ = ['_proto', '_source', '_destination', '_jump']
 
     def __init__(self):
-        super(Rule, self).__init__('')
+        self._proto = None
+        self._source = None
+        self._destination = None
+        self._jump = None
+
+    def proto(self, p):
+        self._proto = LongOpt('--proto', p, delim=' ')
+        return self
+
+    def not_proto(self, p):
+        self._proto = Prefix('!', LongOpt('--proto', p, delim=' '))
+        return self
+
+    def source(self, addr):
+        self._source = LongOpt('--source', addr, delim=' ')
+        return self
+
+    def destination(self, addr):
+        self._destination = LongOpt('--destination', addr, delim=' ')
+        return self
+
+    def jump(self, target):
+        self._jump = LongOpt('--jump', target, delim=' ')
+        return self
+
+    @property
+    def opts(self):
+        _opts = filter(lambda x: x is not None, [getattr(self, opt) for opt in self.__slots__])
+        return _opts
+
+
+@compiler.when(Rule)
+def compile_iptables_rule(compiler, rule: Rule, ctx, state):
+    for opt in rule.opts:
+        compiler(opt, ctx, state)
+
+
+class IptablesCheck(Subcommand):
+    __slots__ = ['_rule']
+
+    def __init__(self, ipt):
+        super(IptablesCheck, self).__init__('--check', ipt)
+        self._rule = None
+
+    def rule(self, rule: Rule):
+        self._rule = rule
+        return self
+
+    def chain(self, name):
+        if name:
+            self._opts.append(name)
+        return self
+
+    @property
+    def opts(self):
+        return self._opts + [self._rule]
+
+
+class IptablesAppend(IptablesCheck):
+    __slots__ = []
+
+    def __init__(self, ipt):
+        super(IptablesAppend, self).__init__(ipt)
+        self.cmd = '--append'
 
 
 class Iptables(Cmd):
@@ -60,17 +110,19 @@ class Iptables(Cmd):
     def list(self, chain=''):
         return IptablesList(self).chain(chain)
 
-    def check(self):
-        self._opts.append('--check')
-        return self
+    def check(self, chain, rule: Rule):
+        return IptablesCheck(self).chain(chain).rule(rule)
 
     def new_chain(self, chain):
-        self._opts.append(LongOpt('--new-chain', chain))
+        self._opts.append(LongOpt('--new-chain', chain, delim=' '))
         return self
 
     def flush_chain(self, chain):
-        self._opts.append(LongOpt('--flush', chain))
+        self._opts.append(LongOpt('--flush', chain, delim=' '))
         return self
 
     def delete_chain(self, chain):
-        self._opts.append(LongOpt('--delete-chain', chain))
+        self._opts.append(LongOpt('--delete-chain', chain, delim=' '))
+
+    def append(self, chain, rule: Rule):
+        return IptablesAppend(self).chain(chain).rule(rule)

@@ -129,6 +129,26 @@ class Rm(BasePathCmd):
         return self
 
 
+class Mv(BasePathCmd):
+    __slots__ = ['_dst']
+
+    def __init__(self, path, dst):
+        super(Mv, self).__init__('mv', path)
+        self._dst = dst
+
+    @property
+    def opts(self):
+        return self._opts + [self._path] + [self._dst]
+
+
+class Cp(Mv):
+    __slots__ = []
+
+    def __init__(self, path, dst):
+        super(Cp, self).__init__(path, dst)
+        self.cmd = 'cp'
+
+
 class Ln(BasePathCmd):
     __slots__ = ['_name']
 
@@ -279,3 +299,26 @@ def compile_sed(compiler, cmd, ctx, state):
     if cmd._path:
         state.opts.append('-i')
         state.opts.append(quote(cmd._path))
+
+
+class Diff(Cmd):
+    __slots__ = ['_files']
+
+    def __init__(self):
+        super(Diff, self).__init__('diff')
+        self._files = []
+
+    def unified(self, num=None):
+        if num is None:
+            self._opts.append('--unified')
+        else:
+            self._opts.append(LongOpt('--unified', num))
+        return self
+
+    def files(self, *args):
+        self._files = list(args)
+        return self
+
+    @property
+    def opts(self):
+        return self._opts + self._files

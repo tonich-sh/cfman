@@ -26,5 +26,5 @@ def test_run_a_decorated_job():
         a = 10
 
     program = Program()
-    program.run(['test1'])
+    program.run(['cfman.tests.test_program.test1'])
     assert a == 10

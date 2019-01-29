@@ -64,3 +64,7 @@ def md5sum(ctx, path):
         return res.stdout.split(' ')[0]
     return ''
 
+
+def files_is_different(ctx, *files):
+    res = ctx.run(file.Diff().files(*files))
+    return not res.ok

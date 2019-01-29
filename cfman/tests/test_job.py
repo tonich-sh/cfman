@@ -18,4 +18,4 @@ def test_decorator():
     def test1(ctx):
         pass
 
-    assert 'test1' in registry
+    assert 'cfman.tests.test_job.test1' in registry

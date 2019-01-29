@@ -5,6 +5,11 @@ from shlex import quote
 from .compiler import compiler
 
 
+@compiler.when(str)
+def compile_str(compiler, cmd, ctx, state):
+    state.opts.append(quote(cmd))
+
+
 class Opt(object):
     __slots__ = ['_name', '_value', '_delim']
 
@@ -14,10 +19,15 @@ class Opt(object):
         self._delim = delim
 
 
+@compiler.when(Opt)
+def compile_opt(compiler, opt, ctx, state):
+    state.opts.append('{}{}{}'.format(quote(opt._name), opt._delim, quote(str(opt._value))))
+
+
 class LongOpt(Opt):
     __slots__ = []
 
-    def __init__(self, name, value, delim='='):
+    def __init__(self, name: str, value, delim='='):
         super(LongOpt, self).__init__(name, value, delim)
 
 
@@ -79,7 +89,7 @@ def compile_str(compiler, cmd, ctx, state):
 
 # TODO: metaclass with registry of additional methods and properties
 class Cmd(object):
-    __slots__ = ('_opts', 'cmd')
+    __slots__ = ['_opts', 'cmd']
 
     def __init__(self, cmd, *args, **kwargs):
         self.cmd = cmd
@@ -102,6 +112,13 @@ class Cmd(object):
         return copy.copy(self)
 
 
+@compiler.when(Cmd)
+def compile_cmd(compiler, cmd, ctx, state):
+    state.opts.append(quote(cmd.cmd))
+    for opt in cmd.opts:
+        compiler(opt, ctx, state)
+
+
 class Subcommand(Cmd):
     __slots__ = ['_parent', '_global_opts']
 
@@ -111,20 +128,8 @@ class Subcommand(Cmd):
         self._global_opts = []
 
 
-@compiler.when(str)
-def compile_str(compiler, cmd, ctx, state):
-    state.opts.append(quote(cmd))
-
-
-@compiler.when(Cmd)
-def compile_cmd(compiler, cmd, ctx, state):
-    state.opts.append(quote(cmd.cmd))
-    for opt in cmd.opts:
-        compiler(opt, ctx, state)
-
-
 @compiler.when(Subcommand)
-def compile_git_subcommand(compiler, cmd: Subcommand, ctx, state):
+def compile_subcommand(compiler, cmd: Subcommand, ctx, state):
     compiler(cmd._parent, ctx, state)
 
     for opt in cmd._global_opts:
@@ -136,6 +141,18 @@ def compile_git_subcommand(compiler, cmd: Subcommand, ctx, state):
         compiler(opt, ctx, state)
 
 
-@compiler.when(Opt)
-def compile_opt(compiler, opt, ctx, state):
-    state.opts.append('{}{}{}'.format(quote(opt._name), opt._delim, quote(opt._value)))
+class Prefix(object):
+    __slots__ = ['_prefix', '_obj']
+
+    def __init__(self, prefix, obj):
+        self._prefix = prefix
+        self._obj = obj
+
+
+@compiler.when(Prefix)
+def compile_opt(compiler, prefix: Prefix, ctx, state):
+    state.opts.append(prefix._prefix)
+    compiler(prefix._obj, ctx, state)
+
+
+
