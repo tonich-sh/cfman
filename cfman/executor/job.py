@@ -25,16 +25,21 @@ class Job(object):
         sig = inspect.signature(self.callable)
         params = []
         kwparams = {}
+        missing_required = []
         for parameter in list(sig.parameters.values())[1:]:  # skip first parameter - context
             param = '{}'.format(parameter.name)
             param_value = getattr(parsed_args, param)
             if parameter.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
                 if param_value is None:
+                    if parameter.default is parameter.empty:
+                        missing_required.append(parameter.name)
                     kwparams['{}'.format(parameter.name)] = parameter.default
                 else:
                     kwparams['{}'.format(parameter.name)] = param_value
             else:
                 params.append(param_value)
+        if missing_required:
+            raise TypeError('missing required options: {}'.format(missing_required))
         # run callable
         self.callable(ctx, *params, **kwparams)
 

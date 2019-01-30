@@ -65,7 +65,7 @@ class Program(object):
                         ctx = Remote(host)
                     _job(ctx, *job_params)
         else:
-            print(job.registry)
+            [print(j) for j in job.registry.keys()]
 
     @classmethod
     def parse_global_opts(cls, *args):
