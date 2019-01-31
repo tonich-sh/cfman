@@ -150,7 +150,7 @@ class Prefix(object):
 
 
 @compiler.when(Prefix)
-def compile_opt(compiler, prefix: Prefix, ctx, state):
+def compile_prefix(compiler, prefix: Prefix, ctx, state):
     state.opts.append(prefix._prefix)
     compiler(prefix._obj, ctx, state)
 
