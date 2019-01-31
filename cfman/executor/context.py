@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class Result(object):
 
+    # TODO: add exception parameter
     def __init__(self, stdout='', stderr='', return_code=0):
         self.stdout = stdout
         self.stderr = stderr
@@ -138,7 +139,7 @@ class Local(Context):
                 stdout, stderr = process.communicate()
                 break
             except KeyboardInterrupt as e:
-                process.send_signal(signal.CTRL_C_EVENT)
+                process.send_signal(signal.SIGINT)
                 exception = e
                 break
             except BaseException as e:

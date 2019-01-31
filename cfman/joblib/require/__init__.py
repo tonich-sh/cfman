@@ -8,3 +8,4 @@ Raises exception if failed
 from .file import directory, file
 from . import deb
 from . import iptables
+from .user import user, group

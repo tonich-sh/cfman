@@ -81,7 +81,7 @@ class CommandChain(object):
 
 
 @compiler.when(CommandChain)
-def compile_str(compiler, cmd, ctx, state):
+def compile_command_chain(compiler, cmd, ctx, state):
     compiler(cmd._left, ctx, state)
     state.opts.append(';')
     compiler(cmd._right, ctx, state)
