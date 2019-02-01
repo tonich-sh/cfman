@@ -85,9 +85,14 @@ class ParamikoConnection(BaseConnection):
             sftp.put(local, remote)
         return remote
 
-    # def fetch_file(self, remote, local):
-    #     sftp = self._ssh.open_sftp()
-    #     pass
+    def fetch_file(self, remote, local):
+        is_file_object = hasattr(local, 'seek') and callable(local.seek)
+        sftp = self._ssh.open_sftp()
+        if is_file_object:
+            sftp.getfo(remote, local)
+        else:
+            sftp.get(remote, local)
+        return remote
 
     def put_dir(self, local_path, remote_path):
         assert os.path.isdir(local_path)
@@ -135,3 +140,7 @@ class ParamikoConnection(BaseConnection):
 
     # def fetch_dir(self):
     #     pass
+
+    def stat(self, remote):
+        sftp = self._ssh.open_sftp()
+        return sftp.lstat(remote)

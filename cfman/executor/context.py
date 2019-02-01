@@ -89,7 +89,7 @@ class Context(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self):
+    def get(self, remote, local, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -182,6 +182,24 @@ class Remote(Context):
                 remote,
                 orig_local='',
                 orig_remote=remote,
+                context=self
+            )
+
+    def get(self, remote, local, **kwargs):
+        """
+        Do transfer local file/dir from remote location
+        """
+        import stat
+        s = self.connection.stat(remote)
+        if stat.S_ISDIR(s.st_mode):
+            raise NotImplementedError()
+        else:
+            path = self.connection.fetch_file(remote, local)
+            return TransferResult(
+                local,
+                remote,
+                orig_local=local,
+                orig_remote='',
                 context=self
             )
 
