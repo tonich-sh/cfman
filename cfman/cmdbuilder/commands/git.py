@@ -57,6 +57,10 @@ class Git(Cmd):
     def clone(self, repo, directory=None):
         return GitClone(self, repo, directory)
 
+    def fetch(self, origin=None):
+        self._subcmd = 'fetch'
+        return self
+
 
 @compiler.when(Git)
 def compile_git(compiler, cmd: Git, ctx, state):
