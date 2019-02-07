@@ -2,6 +2,8 @@
 import os
 import sys
 import logging
+import threading
+import traceback
 
 from importlib import util
 from argparse import ArgumentParser
@@ -56,6 +58,7 @@ class Program(object):
             # TODO: parse job params here?
             self._jobs.append((_job, job_params))
         # TODO: context factory by host type (ssh://root@test, localhost)
+        processes = []
         if self._jobs:
             for _job, job_params in self._jobs:
                 for host in self._hosts:
@@ -63,7 +66,24 @@ class Program(object):
                         ctx = Local()
                     else:
                         ctx = Remote(host)
-                    _job(ctx, *job_params)
+                    p = threading.Thread(target=_job, args=[ctx] + job_params)
+                    processes.append(p)
+                    p.start()
+                    # _job(ctx, *job_params)
+            try:
+                while processes:
+                    for p in processes:
+                        p.join(timeout=1)
+                        if not p.is_alive():
+                            processes.remove(p)
+            except (SystemExit, KeyboardInterrupt):
+                logger.error(traceback.format_exc())
+                while processes:
+                    for p in processes:
+                        if p.is_alive():
+                            p.terminate()
+                        else:
+                            processes.remove(p)
         else:
             [print(j) for j in job.registry.keys()]
 
