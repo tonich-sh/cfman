@@ -81,6 +81,7 @@ class Touch(BasePathCmd):
 
 
 class RecursiveMixin(object):
+    __slots__ = []
 
     def recursive(self):
         self._opts.append('-R')
@@ -114,7 +115,15 @@ class Chmod(BasePathCmd, RecursiveMixin):
         self._opts.append(mode)
 
 
-class Rm(BasePathCmd):
+class RecursiveMixinLower(object):
+    __slots__ = []
+
+    def recursive(self):
+        self._opts.append('-r')
+        return self
+
+
+class Rm(BasePathCmd, RecursiveMixinLower):
     __slots__ = []
 
     def __init__(self, path):
@@ -124,12 +133,8 @@ class Rm(BasePathCmd):
         self._opts.append('-f')
         return self
 
-    def recursive(self):
-        self._opts.append('-r')
-        return self
 
-
-class Mv(BasePathCmd):
+class Mv(BasePathCmd, RecursiveMixinLower):
     __slots__ = ['_dst']
 
     def __init__(self, path, dst):
@@ -138,7 +143,7 @@ class Mv(BasePathCmd):
 
     @property
     def opts(self):
-        return self._opts + [self._path] + [self._dst]
+        return self._opts + [self._path, self._dst]
 
 
 class Cp(Mv):

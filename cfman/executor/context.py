@@ -77,7 +77,7 @@ class Context(object):
     @contextmanager
     def cd(self, path):
         self.command_chain.append(file.Cd(path))
-        yield
+        yield path
         self.command_chain.pop()
 
     @abc.abstractmethod
@@ -112,7 +112,7 @@ class Local(Context):
     @contextmanager
     def cd(self, path):
         self._cwd = path
-        yield
+        yield path
         self._cwd = None
 
     def run(self, cmd: Cmd, **kwargs):

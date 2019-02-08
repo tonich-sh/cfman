@@ -22,6 +22,7 @@ class GitClone(Subcommand):
 
     def depth(self, depth):
         self._opts.append(LongOpt('--depth', depth))
+        return self
 
 
 # TODO: classes for git subcommands
@@ -51,6 +52,11 @@ class Git(Cmd):
         self._subopts = [LongOpt('--format', format)]
         if out:
             self._subopts.append(Opt('-o', out))
+        self._subopts.append(rev)
+        return self
+
+    def checkout(self, rev):
+        self._subcmd = 'checkout'
         self._subopts.append(rev)
         return self
 
