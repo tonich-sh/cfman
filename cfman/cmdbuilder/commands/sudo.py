@@ -6,10 +6,30 @@ from ..cmd import Cmd, Opt
 
 
 class Sudo(Cmd):
-    __slots__ = []
+    __slots__ = ['_cmd']
 
-    def __init__(self):
+    def __init__(self, user=None):
         super(Sudo, self).__init__('sudo')
+        self._opts.append('-S')
+        if user is not None:
+            self._opts.append('-u')
+            self._opts.append(user)
+
+    def command(self, cmd: Cmd):
+        self._cmd = cmd
+        return self
+
+
+@compiler.when(Sudo)
+def compile_sudo(compiler, cmd: Sudo, ctx, state):
+
+    state.opts.append(quote(cmd.cmd))
+    for opt in cmd.opts:
+        compiler(opt, ctx, state)
+
+    if cmd._cmd:
+        compiler(cmd._cmd, ctx, state)
+
 
 
 class Su(Cmd):

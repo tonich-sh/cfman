@@ -68,7 +68,7 @@ class Context(object):
                     rcmd = sudo.Su(user).shell('/bin/sh').command(cmd)
                 else:
                     # TODO: use sudo
-                    # sudo
+                    rcmd = sudo.Sudo(user).command(cmd)
                     pass
         for cc in self.command_chain:
             rcmd = CommandChain(cc, rcmd)
