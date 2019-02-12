@@ -29,7 +29,7 @@ def directory(ctx, path, owner=None, group=None, mode=None):
 
 # TODO: contents encoding
 def file(ctx, path=None, contents=None, source=None, url=None, md5=None,
-         owner=None, group='', mode=None):
+         owner=None, group=None, mode=None):
 
     if path and not (contents or source or url):
         assert path
@@ -67,9 +67,9 @@ def file(ctx, path=None, contents=None, source=None, url=None, md5=None,
                 ctx.put(source, remote=path)
 
     # Ensure correct owner
-    if owner is not None:
+    if owner is not None and owner:
         ctx.run(_file.Chown(path, owner=owner, group=group))
-    elif group is not None:
+    elif group is not None and group:
         ctx.run(_file.Chgrp(path, group=group))
 
     # Ensure correct mode
