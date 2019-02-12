@@ -146,6 +146,21 @@ class Local(Context):
                 exception = e
                 break
         return Result(stdout.decode(), stderr.decode(), process.returncode)
+    
+    def put(self, local, remote, **kwargs):
+        """
+        Do transfer local file/dir to remote location
+        :param ctx:
+        :param local:
+        :param remote:
+        :return:
+        """
+        is_file_object = hasattr(local, 'seek') and callable(local.seek)
+       
+        if is_file_object:
+            open(remote, 'wb').write(local.getvalue())
+        else:
+            self.run(file.Cp(local, remote).recursive())
 
 
 class Remote(Context):
