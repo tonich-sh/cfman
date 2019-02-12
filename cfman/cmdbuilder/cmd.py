@@ -108,6 +108,9 @@ class Cmd(object):
     def pipe(self, cmd):
         return Pipe(self, cmd)
 
+    def chain(self, cmd):
+        return CommandChain(self, cmd)
+
     def _clone(self):
         return copy.copy(self)
 

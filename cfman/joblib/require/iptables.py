@@ -12,7 +12,18 @@ def chain(ctx: Context, name, table=''):
 
 
 def rule(ctx: Context, _chain, _rule: Rule, table=''):
-    chain(ctx, _chain, table=table)
+    assert chain(ctx, _chain, table=table).ok
     if not has_rule(ctx, _chain, _rule, table=table):
         res = ctx.run(Iptables(table=table).append(_chain, _rule))
         assert res.ok
+
+
+def rules(ctx: Context, _chain, _rules, table='', clean=True):
+    assert chain(ctx, _chain, table=table).ok
+    if clean:
+        assert ctx.run(Iptables().flush_chain(_chain)).ok
+    c = Iptables(table=table).append(_chain, _rules[0])
+    for r in _rules[1:]:
+        c = c.chain(Iptables(table=table).append(_chain, r))
+
+    assert ctx.run(c).ok
