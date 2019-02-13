@@ -85,7 +85,9 @@ class Program(object):
                         else:
                             processes.remove(p)
         else:
-            [print(j) for j in job.registry.keys()]
+            jobs = [j for j in job.registry.keys()]
+            jobs.sort()
+            [print(j) for j in jobs]
 
     @classmethod
     def parse_global_opts(cls, *args):

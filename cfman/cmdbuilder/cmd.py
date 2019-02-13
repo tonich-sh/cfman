@@ -79,6 +79,9 @@ class CommandChain(object):
         self._left = left
         self._right = right
 
+    def _chain(self, cmd):
+        return CommandChain(self, cmd)
+
 
 @compiler.when(CommandChain)
 def compile_command_chain(compiler, cmd, ctx, state):
@@ -108,7 +111,7 @@ class Cmd(object):
     def pipe(self, cmd):
         return Pipe(self, cmd)
 
-    def chain(self, cmd):
+    def _chain(self, cmd):
         return CommandChain(self, cmd)
 
     def _clone(self):
