@@ -12,7 +12,7 @@ class AptGet(Cmd):
         super(AptGet, self).__init__('apt-get')
         self._opts = ['-y', '-q=2']
         self._pkgs = []
-        
+
     @property
     def opts(self):
         return self._opts + self._pkgs

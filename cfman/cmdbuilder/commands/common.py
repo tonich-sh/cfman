@@ -1,5 +1,5 @@
 
-from ..cmd import Cmd, Opt
+from ..cmd import Cmd
 
 
 class Test(Cmd):
@@ -10,6 +10,10 @@ class Test(Cmd):
 
     def file_exists(self, path):
         self._opts = ['-e', path]
+        return self
+
+    def symlink_exists(self, path):
+        self._opts = ['-h', path]
         return self
 
 

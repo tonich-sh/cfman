@@ -2,8 +2,11 @@
 from ..cmdbuilder.commands import common, file
 
 
-def exists(ctx, path):
-    return ctx.run(common.Test().file_exists(path), warn=True).ok
+def exists(ctx, path, file_type=None):
+    if file_type is None:
+        return ctx.run(common.Test().file_exists(path), warn=True).ok
+    if file_type == 'symlink':
+        return ctx.run(common.Test().symlink_exists(path), warn=True).ok
 
 
 def contains(ctx, filename, text, exact=False, case_sensitive=True):
