@@ -145,18 +145,21 @@ class Local(Context):
             except BaseException as e:
                 exception = e
                 break
+        warn = kwargs.get('warn', False)
+        if warn and stderr:
+            logger.warning(stderr.decode())
         return Result(stdout.decode(), stderr.decode(), process.returncode)
-    
+
     def put(self, local, remote, **kwargs):
         """
-        Do transfer local file/dir to remote location
+        Do transfer of local file/dir to remote location
         :param ctx:
         :param local:
         :param remote:
         :return:
         """
         is_file_object = hasattr(local, 'seek') and callable(local.seek)
-       
+
         if is_file_object:
             open(remote, 'wb').write(local.getvalue())
         else:
@@ -223,4 +226,7 @@ class Remote(Context):
         c, params = compiler(rcmd, self)
         logger.debug('{host}: {cmd}'.format(host=self.host, cmd=c))
         stdin, stdout, stderr, returncode = self.connection.exec_command(c)
+        warn = kwargs.get('warn', False)
+        if warn and stderr:
+            logger.warning(stderr.decode())
         return Result(stdout, stderr, returncode)
