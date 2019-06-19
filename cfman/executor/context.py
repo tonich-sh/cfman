@@ -228,5 +228,5 @@ class Remote(Context):
         stdin, stdout, stderr, returncode = self.connection.exec_command(c)
         warn = kwargs.get('warn', False)
         if warn and stderr:
-            logger.warning(stderr.decode())
+            logger.warning(stderr)
         return Result(stdout, stderr, returncode)

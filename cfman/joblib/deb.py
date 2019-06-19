@@ -15,8 +15,9 @@ def installed(ctx, pkg):
 
 def install(ctx, packages, update=False):
     if update:
-        ctx.run(deb.AptGet().update(), warn=True)
-    ctx.run(deb.AptGet().install(*packages), warn=True)
+        if not ctx.run(deb.AptGet().update(), warn=True).ok:
+            return Result('', '', 1)
+    return ctx.run(deb.AptGet().install(*packages), warn=True)
 
 
 def apt_key_exists(ctx, fingerprint):
@@ -47,6 +48,7 @@ def apt_key_add(ctx, fingerprint=None, filename=None, url=None, keyserver=None):
         elif url is not None:
             with file_job.temp_dir(ctx, 'fabtools-gpghome.XXXXXXXXXX') as tmp_dir:
                 assert ctx.run(ctx, file.Wget(url).output(os.path.join(tmp_dir, 'key.gpg')), warn=True, hide=True).ok
+                # TODO: check format of downloaded key then select of importing method
                 res = ctx.run(ctx, g.keyring(os.path.join(tmp_dir, 'key.gpg')).homedir(tmp_dir).export(asc=True).pipe(deb.AptKey().add('-')), warn=True, hide=True)
         else:
             raise ValueError(
