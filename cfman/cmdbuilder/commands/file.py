@@ -225,6 +225,10 @@ class Grep(BasePathCmd):
         self._pat = pattern
         return self
 
+    def only_matching(self):
+        self._opts.append('-o')
+        return self
+
 
 @compiler.when(Grep)
 def compile_grep(compiler, cmd, ctx, state):
