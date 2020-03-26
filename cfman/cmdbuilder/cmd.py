@@ -21,7 +21,10 @@ class Opt(object):
 
 @compiler.when(Opt)
 def compile_opt(compiler, opt, ctx, state):
-    state.opts.append('{}{}{}'.format(quote(opt._name), opt._delim, quote(str(opt._value))))
+    if opt._value is None:
+        state.opts.append('{}'.format(quote(opt._name)))
+    else:
+        state.opts.append('{}{}{}'.format(quote(opt._name), opt._delim, quote(str(opt._value))))
 
 
 class LongOpt(Opt):

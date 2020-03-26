@@ -80,6 +80,13 @@ class Touch(BasePathCmd):
         super(Touch, self).__init__('touch', file_name)
 
 
+class Cat(BasePathCmd):
+    __slots__ = []
+
+    def __init__(self, file_name):
+        super(Cat, self).__init__('cat', file_name)
+
+
 class RecursiveMixin(object):
     __slots__ = []
 

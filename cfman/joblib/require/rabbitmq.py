@@ -27,9 +27,10 @@ def user(ctx, name, password, tags=None, perms=None):
         try:
             if len(_perms) == 4:
                 vhost = _perms.pop(0)
+                cfg, write, read = _perms[0:3]
             else:
                 vhost = None
-            cfg, write, read = _perms[0:3]
+                cfg, write, read = ['', '', '']
             assert ctx.run(rabbitmq.RabbitmqCtl().set_permissions(name, cfg, write, read, vhost=vhost)).ok
         except:
             logger.error('invalid permission specification: "{}"'.format(perms))

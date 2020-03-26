@@ -63,7 +63,7 @@ class SetPermissions(Subcommand):
     @property
     def opts(self):
         if self._vhost is not None:
-            v = [self._vhost]
+            v = ['-p', self._vhost]
         else:
             v = []
         return v + [self._user_name] + self._perms
