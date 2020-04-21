@@ -1,6 +1,7 @@
 
 from cfman.cmdbuilder.cmd import Cmd
 
+
 class Getent(Cmd):
     __slots__ = []
 

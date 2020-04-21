@@ -5,6 +5,7 @@ import logging
 
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSH_PORT
+from paramiko.agent import AgentRequestHandler
 
 from . import BaseConnection
 
@@ -33,7 +34,8 @@ class ParamikoConnection(BaseConnection):
         self._ssh.connect(
             self.host,
             self._port,
-            self.user
+            self.user,
+            allow_agent=True,
         )
 
     def close(self):
@@ -45,6 +47,7 @@ class ParamikoConnection(BaseConnection):
     def exec_command(self, cmd):
         transport = self._ssh.get_transport()
         ch = transport.open_session()
+        AgentRequestHandler(ch)
         ch.exec_command(cmd)
 
         stdin = ''

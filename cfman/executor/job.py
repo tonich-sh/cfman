@@ -4,11 +4,38 @@ import logging
 
 from argparse import ArgumentParser
 
-# from urllib.parse import urlparse
+__all__ = ['Job', 'job', 'registry']
 
 logger = logging.getLogger(__name__)
 
 registry = {}
+
+
+class InvalidParameter(Exception):
+    pass
+
+
+class DefaultParam(object):
+    @classmethod
+    def clean(cls, value):
+        return value
+
+
+class BooleanParam(object):
+
+    @classmethod
+    def clean(cls, value):
+        if isinstance(value, str):
+            if value.lower() in ['false', 'f', 'off', 'no', '0']:
+                return False
+            else:
+                return True
+        raise InvalidParameter('unable to parse parameter value')
+
+
+_param_types_map = {
+    bool: BooleanParam
+}
 
 
 class Job(object):
@@ -35,7 +62,11 @@ class Job(object):
                         missing_required.append(parameter.name)
                     kwparams['{}'.format(parameter.name)] = parameter.default
                 else:
-                    kwparams['{}'.format(parameter.name)] = param_value
+                    if parameter.default is not parameter.empty:
+                        param_type = _param_types_map.get(type(parameter.default), DefaultParam)
+                        kwparams['{}'.format(parameter.name)] = param_type.clean(param_value)
+                    else:
+                        kwparams['{}'.format(parameter.name)] = param_value
             else:
                 params.append(param_value)
         if missing_required:

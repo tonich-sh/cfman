@@ -1,9 +1,30 @@
 
+import re
 import os
 from shlex import quote
 
 from ..compiler import compiler
 from ..cmd import Cmd, LongOpt
+
+
+# for support glob in file parameters
+class ShellPath(object):
+    __sots__ = '_path'
+
+    def __init__(self, path):
+        self._path = path
+
+
+@compiler.when(ShellPath)
+def compile_shell_path(compiler, cmd, ctx, state):
+    path = cmd._path
+    if path.startswith('*'):  # TODO: the same for "?" character ???
+        path = '.' + os.sep + path
+    if re.compile(r'[\n]', re.ASCII).search(path):
+        raise Exception('Invalid chars in filename')
+    # TODO: fix all invalid chars https://dwheeler.com/essays/fixing-unix-linux-filenames.html
+    parts = map(lambda x: x.replace(' ', r'\ '), path.split(os.sep))
+    state.opts.append(os.sep.join(parts))
 
 
 class BasePathCmd(Cmd):
@@ -134,7 +155,7 @@ class Rm(BasePathCmd, RecursiveMixinLower):
     __slots__ = []
 
     def __init__(self, path):
-        super(Rm, self).__init__('rm', path)
+        super(Rm, self).__init__('rm', ShellPath(path))
 
     def force(self):
         self._opts.append('-f')
