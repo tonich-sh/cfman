@@ -1,6 +1,7 @@
 
 import abc
 import os
+import copy
 import pwd
 import signal
 import shlex
@@ -42,11 +43,11 @@ class TransferResult(object):
 
 class Context(object):
 
-    def __init__(self, host='localhost'):
+    def __init__(self, **kwargs):
         """
         :param host:
         """
-        self.host = host
+        self.host = kwargs.get('host', None)
         self.command_chain = []
 
     def _get_current_user(self):
@@ -100,7 +101,7 @@ class Context(object):
 class Local(Context):
 
     def __init__(self):
-        super(Local, self).__init__('localhost')
+        super(Local, self).__init__(host='localhost')
         self._cwd = None
 
     def _get_current_user(self):
@@ -168,9 +169,11 @@ class Local(Context):
 
 class Remote(Context):
 
-    def __init__(self, host):
-        super(Remote, self).__init__(host)
-        self.connection = ParamikoConnection(host=host)
+    def __init__(self, host, **kwargs):
+        kw = copy.copy(kwargs)
+        kw.update(host=host)
+        super(Remote, self).__init__(**kw)
+        self.connection = ParamikoConnection(**kw)
         self.connection.connect()
 
     def _get_current_user(self):

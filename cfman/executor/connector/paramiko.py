@@ -13,6 +13,7 @@ from . import BaseConnection
 class ParamikoConnection(BaseConnection):
 
     def __init__(self, **kwargs):
+        self._kwargs = kwargs
         self._ssh = None  # type: SSHClient
 
         self.host = None
@@ -31,11 +32,13 @@ class ParamikoConnection(BaseConnection):
         self._ssh = SSHClient()
         self._ssh.set_missing_host_key_policy(AutoAddPolicy())
         self._ssh.load_system_host_keys()
+        timeout = self._kwargs.get('timeout', None)
         self._ssh.connect(
             self.host,
             self._port,
             self.user,
             allow_agent=True,
+            timeout=timeout
         )
 
     def close(self):
