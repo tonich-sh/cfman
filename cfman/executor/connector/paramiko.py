@@ -65,16 +65,16 @@ class ParamikoConnection(BaseConnection):
             if len(r):
                 data = ch.recv(size)
                 while data:
-                    stdout += data.decode()
+                    stdout += data.decode(errors='replace')
                     data = ch.recv(size)
-                    for line in data.decode().splitlines():
+                    for line in data.decode(errors='replace').splitlines():
                         print(line.strip())
 
                 data = ch.recv_stderr(size)
                 while data:
-                    stderr += data.decode()
+                    stderr += data.decode(errors='replace')
                     data = ch.recv_stderr(size)
-                    for line in data.decode().splitlines():
+                    for line in data.decode(errors='replace').splitlines():
                         print(line.strip())
 
             if ch.exit_status_ready():
