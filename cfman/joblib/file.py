@@ -1,11 +1,13 @@
 
 from ..cmdbuilder.commands import common, file
 
+FILE_TYPE_SYMLINK = 'symlink'
+
 
 def exists(ctx, path, file_type=None):
     if file_type is None:
         return ctx.run(common.Test().file_exists(path), warn=True).ok
-    if file_type == 'symlink':
+    if file_type == FILE_TYPE_SYMLINK:
         return ctx.run(common.Test().symlink_exists(path), warn=True).ok
 
 

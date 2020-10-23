@@ -5,9 +5,9 @@ from cfman.cmdbuilder.cmd import Cmd, Opt
 class GroupCmd(Cmd):
     __slots__ = ['_name']
 
-    def __init__(self, cmd):
+    def __init__(self, cmd, name):
         super(GroupCmd, self).__init__(cmd)
-        self._name = None
+        self._name = name
 
     def name(self, s):
         self._name = s
@@ -21,8 +21,8 @@ class GroupCmd(Cmd):
 class Useradd(GroupCmd):
     __slots__ = []
 
-    def __init__(self):
-        super(Useradd, self).__init__('useradd')
+    def __init__(self, name):
+        super(Useradd, self).__init__('useradd', name)
     
     def uid(self, n):
         self._opts.append(Opt('-u', n))
@@ -40,6 +40,10 @@ class Useradd(GroupCmd):
         self._opts.append(Opt('-d', d))
         return self
 
+    def create_home(self):
+        self._opts.append(Opt('-m'))
+        return self
+
 
 class Usermod(Cmd):
     pass
@@ -52,8 +56,8 @@ class Userdel(Cmd):
 class Groupadd(GroupCmd):
     __slots__ = []
 
-    def __init__(self):
-        super(Groupadd, self).__init__('groupadd')
+    def __init__(self, name):
+        super(Groupadd, self).__init__('groupadd', name)
 
     def gid(self, n):
         self._opts.append(Opt('-g', n))
