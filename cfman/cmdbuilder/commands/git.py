@@ -29,7 +29,7 @@ class GitFetch(Subcommand):
     __slots__ = ['_remote']
 
     def __init__(self, git, remote=None):
-        super(GitFetch, self).__init__('clone', git)
+        super(GitFetch, self).__init__('fetch', git)
         self._remote = remote
 
     @property
