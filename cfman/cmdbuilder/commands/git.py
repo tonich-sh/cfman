@@ -25,6 +25,21 @@ class GitClone(Subcommand):
         return self
 
 
+class GitFetch(Subcommand):
+    __slots__ = ['_remote']
+
+    def __init__(self, git, remote=None):
+        super(GitFetch, self).__init__('clone', git)
+        self._remote = remote
+
+    @property
+    def opts(self):
+        _opts = self._opts
+        if self._remote is not None:
+            _opts.append(self._remote)
+        return
+
+
 # TODO: classes for git subcommands
 class Git(Cmd):
     __slots__ = ['_subcmd', '_subopts']
@@ -63,9 +78,8 @@ class Git(Cmd):
     def clone(self, repo, directory=None):
         return GitClone(self, repo, directory)
 
-    def fetch(self, origin=None):
-        self._subcmd = 'fetch'
-        return self
+    def fetch(self, remote=None):
+        return GitFetch(self, remote)
 
 
 @compiler.when(Git)
