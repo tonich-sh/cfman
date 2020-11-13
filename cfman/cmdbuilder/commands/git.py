@@ -37,7 +37,7 @@ class GitFetch(Subcommand):
         _opts = self._opts
         if self._remote is not None:
             _opts.append(self._remote)
-        return
+        return _opts
 
 
 # TODO: classes for git subcommands
