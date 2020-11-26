@@ -18,35 +18,46 @@ class GroupCmd(Cmd):
         return self._opts + [self._name]
     
 
-class Useradd(GroupCmd):
+class UserCmd(GroupCmd):
+    __slots__ = []
+
+    def group(self, g):
+        self._opts.append(Opt('-g', g))
+        return self
+
+    def uid(self, n):
+        self._opts.append(Opt('-u', n))
+        return self
+
+    def shell(self, s):
+        self._opts.append(Opt('-s', s))
+        return self
+
+    def password(self, p):
+        self._opts.append(Opt('-p', p))
+        return self
+
+    def home_dir(self, d):
+        self._opts.append(Opt('-d', d))
+        return self
+
+
+class Useradd(UserCmd):
     __slots__ = []
 
     def __init__(self, name):
         super(Useradd, self).__init__('useradd', name)
-    
-    def uid(self, n):
-        self._opts.append(Opt('-u', n))
-        return self
-    
-    def shell(self, s='/bin/false'):
-        self._opts.append(Opt('-s', s))
-        return self
-    
-    def group(self, g):
-        self._opts.append(Opt('-g', g))
-        return self
-    
-    def home_dir(self, d):
-        self._opts.append(Opt('-d', d))
-        return self
 
     def create_home(self):
         self._opts.append(Opt('-m'))
         return self
 
 
-class Usermod(Cmd):
-    pass
+class Usermod(UserCmd):
+    __slots__ = []
+
+    def __init__(self, name):
+        super(Usermod, self).__init__('usermod', name)
 
 
 class Userdel(Cmd):

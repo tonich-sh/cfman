@@ -1,6 +1,8 @@
 
 import copy
 
+from enum import Enum
+
 from shlex import quote
 from .compiler import compiler
 
@@ -8,6 +10,11 @@ from .compiler import compiler
 @compiler.when(str)
 def compile_str(compiler, cmd, ctx, state):
     state.opts.append(quote(cmd))
+
+
+@compiler.when(Enum)
+def compile_enum(compiler, cmd, ctx, state):
+    state.opts.append(str(cmd.value))
 
 
 class Opt(object):
