@@ -61,7 +61,18 @@ class Usermod(UserCmd):
 
 
 class Userdel(Cmd):
-    pass
+    __slots__ = []
+
+    def __init__(self, name):
+        super(Userdel, self).__init__('userdel', name)
+
+    def force(self):
+        self._opts.append('-f')
+        return self
+
+    def remove(self):
+        self._opts.append('-r')
+        return self
 
 
 class Groupadd(GroupCmd):

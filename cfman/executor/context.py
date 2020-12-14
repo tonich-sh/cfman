@@ -8,8 +8,9 @@ import shlex
 import logging
 from subprocess import Popen, PIPE
 from contextlib import contextmanager
+from typing import List, Union
 
-from cfman.cmdbuilder.cmd import Cmd, CommandChain
+from cfman.cmdbuilder.cmd import Cmd, CommandChain, CommandWrap
 from cfman.cmdbuilder.commands import sudo, file
 from cfman.cmdbuilder.compiler import compiler
 from cfman.executor.connector.paramiko import ParamikoConnection
@@ -48,7 +49,8 @@ class Context(object):
         :param host:
         """
         self.host = kwargs.get('host', None)
-        self.command_chain = []
+        self.command_chain: List[Cmd] = []
+        self.command_wrap: Union[CommandWrap, None] = None
 
     def _get_current_user(self):
         raise NotImplementedError
@@ -70,9 +72,10 @@ class Context(object):
                 else:
                     # TODO: use sudo
                     rcmd = sudo.Sudo(user).command(cmd)
-                    pass
         for cc in self.command_chain:
             rcmd = CommandChain(cc, rcmd)
+        if self.command_wrap:
+            rcmd = self.command_wrap.command(rcmd)
         return rcmd
 
     @contextmanager
@@ -93,9 +96,14 @@ class Context(object):
     def get(self, remote, local, **kwargs):
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def belong(self):
-        raise NotImplementedError
+    @contextmanager
+    def belong(self, user: str):
+        if self.user != user:
+            self.command_wrap = sudo.Su(user).shell('/bin/sh')
+        # else:
+        #     self.command_wrap = sudo.Sudo(user)
+        yield self.command_wrap
+        self.command_wrap = None
 
 
 class Local(Context):

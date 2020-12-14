@@ -8,5 +8,5 @@ Raises exception if failed
 from .file import directory, file
 from . import deb
 from . import iptables
-from .user import user, group
+from .user import user, group, not_user
 from . import rabbitmq

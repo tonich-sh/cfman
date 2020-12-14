@@ -1,6 +1,8 @@
 
 import json
 
+from typing import ForwardRef
+
 from ..cmd import Cmd, LongOpt, Opt, Subcommand
 
 
@@ -243,6 +245,36 @@ class RabbitmqAdmin(Cmd):
         return DeclareParameter(self, component, name, value)
 
 
+class ListPlugins(Subcommand):
+    __slots__ = []
+
+    def __init__(self, parent: ForwardRef('RabbitmqPlugins')):
+        super(ListPlugins, self).__init__('list', parent)
+
+    def enabled(self):
+        self._opts.append('--enabled')
+        return self
+
+
+class EnablePlugin(Subcommand):
+    __slots__ = ['_plugins']
+
+    def __init__(self, parent: ForwardRef('RabbitmqPlugins'), plugin: str = ''):
+        super(EnablePlugin, self).__init__('enable', parent)
+        if plugin:
+            self._plugins = {plugin, }
+        else:
+            self._plugins = set()
+
+    def plugin(self, plugin):
+        self._plugins.add(plugin)
+        return self
+
+    @property
+    def opts(self):
+        return list(self._plugins)
+
+
 class RabbitmqPlugins(Cmd):
 
     def __init__(self):
@@ -250,9 +282,16 @@ class RabbitmqPlugins(Cmd):
 
     def list(self):
         """list[-v][-m][-E][-e][ < pattern >]"""
-        pass
+        return ListPlugins(self)
 
+    def enable(self, plugin):
+        """enable [--offline] [--online] <plugin> ..."""
+        return EnablePlugin(self, plugin)
 
-    # enable [--offline] [--online] <plugin> ...
-    # disable [--offline] [--online] <plugin> ...
-    # set [--offline] [--online] <plugin> ...
+    def disable(self):
+        """disable [--offline] [--online] <plugin> ..."""
+        raise NotImplementedError
+
+    def set(self):
+        """set [--offline] [--online] <plugin> ..."""
+        raise NotImplementedError

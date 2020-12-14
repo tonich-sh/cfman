@@ -171,4 +171,23 @@ def compile_prefix(compiler, prefix: Prefix, ctx, state):
     compiler(prefix._obj, ctx, state)
 
 
+class CommandWrap(Cmd):
+    __slots__ = ['_cmd']
 
+    def __init__(self, wrapper):
+        super(CommandWrap, self).__init__(wrapper)
+
+    def command(self, cmd: Cmd):
+        self._cmd = cmd
+        return self
+
+
+@compiler.when(CommandWrap)
+def compile_command_wrap(compiler, cmd: CommandWrap, ctx, state):
+
+    state.opts.append(quote(cmd.cmd))
+    for opt in cmd.opts:
+        compiler(opt, ctx, state)
+
+    if cmd._cmd:
+        compiler(cmd._cmd, ctx, state)

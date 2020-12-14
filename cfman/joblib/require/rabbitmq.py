@@ -2,6 +2,8 @@
 import logging
 import traceback
 
+from typing import List
+
 from cfman.cmdbuilder.commands import rabbitmq, file
 
 
@@ -65,7 +67,7 @@ def queue(ctx, name, bindings=None):
                 key = binding.pop(0)
             except IndexError:
                 key = None
-            assert ctx.run(rabbitmq.RabbitmqAdmin().declare_binding(source, name, routing_key=key))
+            assert ctx.run(rabbitmq.RabbitmqAdmin().declare_binding(source, name, routing_key=key)).ok
 
 
 def parameter(ctx, component, name, value):
@@ -73,5 +75,11 @@ def parameter(ctx, component, name, value):
     exists = res.ok
     print(exists)
     if not exists:
-        assert ctx.run(rabbitmq.RabbitmqAdmin().declare_parameter(component, name, value))
+        assert ctx.run(rabbitmq.RabbitmqAdmin().declare_parameter(component, name, value)).ok
 
+
+def plugins(ctx, plugins: List[str]):
+    for plugin in plugins:
+        res = ctx.run(rabbitmq.RabbitmqPlugins().list().enabled().pipe(file.Grep(r'{}'.format(plugin))))
+        if not res.ok:
+            assert ctx.run(rabbitmq.RabbitmqPlugins().enable(plugin)).ok

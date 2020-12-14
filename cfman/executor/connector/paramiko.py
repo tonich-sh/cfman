@@ -1,7 +1,9 @@
 
 import os
+import sys
 import select
 import logging
+from typing import Union
 
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSH_PORT
@@ -14,7 +16,7 @@ class ParamikoConnection(BaseConnection):
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
-        self._ssh = None  # type: SSHClient
+        self._ssh: Union[SSHClient, None] = None
 
         self.host = None
         self.user = 'root'
@@ -63,19 +65,21 @@ class ParamikoConnection(BaseConnection):
             r, w, x = select.select([ch], [], [], 1)
 
             if len(r):
-                data = ch.recv(size)
-                while data:
-                    stdout += data.decode(errors='replace')
-                    data = ch.recv(size)
-                    for line in data.decode(errors='replace').splitlines():
-                        print(line.strip())
-
-                data = ch.recv_stderr(size)
-                while data:
-                    stderr += data.decode(errors='replace')
-                    data = ch.recv_stderr(size)
-                    for line in data.decode(errors='replace').splitlines():
-                        print(line.strip())
+                if ch in r:
+                    while True:
+                        data = ch.recv_stderr(size)
+                        if not data:
+                            break
+                        stderr += data.decode(errors='replace')
+                        # for line in data.decode(errors='replace').splitlines():
+                        #     print(line.strip())
+                    while True:
+                        data = ch.recv(size)
+                        if not data:
+                            break
+                        stdout += data.decode(errors='replace')
+                        # for line in data.decode(errors='replace').splitlines():
+                        #     print(line.strip())
 
             if ch.exit_status_ready():
                 break

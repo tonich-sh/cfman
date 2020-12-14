@@ -2,11 +2,11 @@
 from shlex import quote
 
 from ..compiler import compiler
-from ..cmd import Cmd, Opt
+from ..cmd import Cmd, Opt, CommandWrap
 
 
-class Sudo(Cmd):
-    __slots__ = ['_cmd']
+class Sudo(CommandWrap):
+    __slots__ = []
 
     def __init__(self, user=None):
         super(Sudo, self).__init__('sudo')
@@ -15,33 +15,17 @@ class Sudo(Cmd):
             self._opts.append('-u')
             self._opts.append(user)
 
-    def command(self, cmd: Cmd):
-        self._cmd = cmd
-        return self
 
-
-@compiler.when(Sudo)
-def compile_sudo(compiler, cmd: Sudo, ctx, state):
-
-    state.opts.append(quote(cmd.cmd))
-    for opt in cmd.opts:
-        compiler(opt, ctx, state)
-
-    if cmd._cmd:
-        compiler(cmd._cmd, ctx, state)
-
-
-
-class Su(Cmd):
+class Su(CommandWrap):
     __slots__ = ['_user', '_cmd', '_login']
 
-    def __init__(self, user):
+    def __init__(self, user: str):
         super(Su, self).__init__('su')
         self._user = user
         self._cmd = None
         self._login = False
 
-    def shell(self, shell):
+    def shell(self, shell: str):
         self._opts.append('-s')
         self._opts.append(shell)
         return self
