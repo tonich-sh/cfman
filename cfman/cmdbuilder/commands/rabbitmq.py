@@ -208,6 +208,21 @@ class DeclareParameter(Subcommand):
         return ret
 
 
+class DeleteParameter(Subcommand):
+    __slots__ = ['_component', '_name']
+
+    def __init__(self, ctl, component, name):
+        super(DeleteParameter).__init__('delete', ctl)
+        self._opts.append('parameter')
+        self._component = LongOpt('component', component)
+        self._name = LongOpt('name', name)
+
+    @property
+    def opts(self):
+        ret = self._opts + [self._component, self._name]
+        return ret
+
+
 class RabbitmqAdmin(Cmd):
 
     def __init__(self):
@@ -243,6 +258,9 @@ class RabbitmqAdmin(Cmd):
     def declare_parameter(self, component, name, value):
         """declare parameter component=... name=... value=..."""
         return DeclareParameter(self, component, name, value)
+
+    def delete_parameter(self, component, name):
+        return DeleteParameter(self, component, name)
 
 
 class ListPlugins(Subcommand):
