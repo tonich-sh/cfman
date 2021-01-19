@@ -212,7 +212,7 @@ class DeleteParameter(Subcommand):
     __slots__ = ['_component', '_name']
 
     def __init__(self, ctl, component, name):
-        super(DeleteParameter).__init__('delete', ctl)
+        super(DeleteParameter, self).__init__('delete', ctl)
         self._opts.append('parameter')
         self._component = LongOpt('component', component)
         self._name = LongOpt('name', name)

@@ -11,8 +11,8 @@ def exists(ctx, path, file_type=None):
         return ctx.run(common.Test().symlink_exists(path), warn=True).ok
 
 
-def contains(ctx, filename, text, exact=False, case_sensitive=True):
-    return ctx.run(file.Grep(text, path=filename).case(on=case_sensitive).regexp(on=not exact), warn=True).ok
+def contains(ctx, filename, pattern, exact=False, case_sensitive=True):
+    return ctx.run(file.Grep(pattern, path=filename).case(on=case_sensitive).regexp(on=not exact), warn=True).ok
 
 
 def append(ctx, filename, text):
