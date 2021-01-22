@@ -15,6 +15,7 @@ setuptools.setup(
         'cfman.cmdbuilder',
         'cfman/cmdbuilder/commands',
         'cfman/joblib',
+        'cfman/joblib/info',
         'cfman/joblib/require',
         'cfman/executor',
         'cfman/executor/connector',
