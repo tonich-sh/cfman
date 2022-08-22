@@ -4,6 +4,7 @@ import os
 import hashlib
 
 from urllib.parse import urlparse
+from cfman.executor.context import Context
 from cfman.joblib.file import exists, md5sum
 from cfman.cmdbuilder.commands import file as _file
 
@@ -28,7 +29,7 @@ def directory(ctx, path, owner=None, group=None, mode=None):
 
 
 # TODO: contents encoding
-def file(ctx, path=None, contents=None, source=None, url=None, md5=None,
+def file(ctx: Context, path=None, contents=None, source=None, url=None, md5=None,
          owner=None, group=None, mode=None):
 
     if path and not (contents or source or url):
@@ -53,15 +54,12 @@ def file(ctx, path=None, contents=None, source=None, url=None, md5=None,
         elif source:
             # Avoid reading the whole file into memory at once
             digest = hashlib.md5()
-            f = open(source, 'rb')
-            try:
+            with open(source, 'rb') as f:
                 while True:
                     d = f.read(BLOCKSIZE)
                     if not d:
                         break
                     digest.update(d)
-            finally:
-                f.close()
             sum = digest.hexdigest()
             if not exists(ctx, path) or md5sum(ctx, path) != sum:
                 ctx.put(source, remote=path)

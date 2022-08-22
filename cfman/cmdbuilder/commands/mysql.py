@@ -1,4 +1,4 @@
-from ..cmd import Cmd, LongOpt, Opt
+from ..cmd import Cmd, LongOpt
 
 
 __all__ = ['Mysql']

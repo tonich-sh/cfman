@@ -17,7 +17,7 @@ def compile_enum(compiler, cmd, ctx, state):
     state.opts.append(str(cmd.value))
 
 
-class Opt(object):
+class Opt:
     __slots__ = ['_name', '_value', '_delim']
 
     def __init__(self, name, value=None, delim=''):
@@ -41,7 +41,7 @@ class LongOpt(Opt):
         super(LongOpt, self).__init__(name, value, delim)
 
 
-class Pipe(object):
+class Pipe:
     __slots__ = ['_from', '_to', '_redir']
 
     def __init__(self, _from, _to):
@@ -82,7 +82,7 @@ class OutputRedirectAppend(Pipe):
         self._redir = '>>'
 
 
-class CommandChain(object):
+class CommandChain:
     __slots__ = ['_left', '_right']
 
     def __init__(self, left, right):
@@ -101,7 +101,7 @@ def compile_command_chain(compiler, cmd, ctx, state):
 
 
 # TODO: metaclass with registry of additional methods and properties
-class Cmd(object):
+class Cmd:
     __slots__ = ['_opts', 'cmd']
 
     def __init__(self, cmd, *args, **kwargs):

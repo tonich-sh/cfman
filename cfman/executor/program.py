@@ -66,7 +66,7 @@ class Program(object):
                         ctx = Local()
                     else:
                         ctx = Remote(host)
-                    p = threading.Thread(target=_job, args=[ctx] + job_params)
+                    p = threading.Thread(target=_job, args=[ctx] + job_params, daemon=True)
                     processes.append(p)
                     p.start()
                     # _job(ctx, *job_params)
@@ -80,9 +80,8 @@ class Program(object):
                 logger.error(traceback.format_exc())
                 while processes:
                     for p in processes:
-                        if p.is_alive():
-                            p.terminate()
-                        else:
+                        p.join(timeout=1)
+                        if not p.is_alive():
                             processes.remove(p)
         else:
             jobs = [j for j in job.registry.keys()]

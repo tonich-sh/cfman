@@ -140,19 +140,16 @@ class Local(Context):
             stdin=PIPE,
             cwd=self._cwd
         )
-        exception = None
         stdout = ''
         stderr = ''
         while True:
             try:
                 stdout, stderr = process.communicate()
                 break
-            except KeyboardInterrupt as e:
+            except KeyboardInterrupt:
                 process.send_signal(signal.SIGINT)
-                exception = e
                 break
-            except BaseException as e:
-                exception = e
+            except BaseException:
                 break
         warn = kwargs.get('warn', False)
         if warn and stderr:
@@ -180,7 +177,7 @@ class Remote(Context):
     def __init__(self, host, **kwargs):
         kw = copy.copy(kwargs)
         kw.update(host=host)
-        super(Remote, self).__init__(**kw)
+        super().__init__(**kw)
         self.connection = ParamikoConnection(**kw)
         self.connection.connect()
 
@@ -196,7 +193,7 @@ class Remote(Context):
         :return:
         """
         if isinstance(local, str) and os.path.isdir(local):
-            paths = self.connection.put_dir(local, remote)
+            self.connection.put_dir(local, remote)
             return TransferResult(
                 local,
                 remote,
@@ -205,7 +202,7 @@ class Remote(Context):
                 context=self
             )
         else:
-            path = self.connection.put_file(local, remote)
+            self.connection.put_file(local, remote)
             return TransferResult(
                 local,
                 remote,
@@ -223,7 +220,7 @@ class Remote(Context):
         if stat.S_ISDIR(s.st_mode):
             raise NotImplementedError()
         else:
-            path = self.connection.fetch_file(remote, local)
+            self.connection.fetch_file(remote, local)
             return TransferResult(
                 local,
                 remote,
@@ -234,9 +231,9 @@ class Remote(Context):
 
     def run(self, cmd: Cmd, **kwargs):
         rcmd = self._prepare_cmd(cmd, **kwargs)
-        c, params = compiler(rcmd, self)
+        c, _ = compiler(rcmd, self)
         logger.debug('{host}: {cmd}'.format(host=self.host, cmd=c))
-        stdin, stdout, stderr, returncode = self.connection.exec_command(c)
+        _, stdout, stderr, returncode = self.connection.exec_command(c)
         warn = kwargs.get('warn', False)
         if warn and stderr:
             logger.warning(stderr)

@@ -1,10 +1,12 @@
 
+import enum
 import re
 import os
 from shlex import quote
+from typing import List, Union
 
 from ..compiler import compiler
-from ..cmd import Cmd, LongOpt
+from ..cmd import Cmd, LongOpt, Opt
 
 
 # for support glob in file parameters
@@ -55,7 +57,7 @@ class Mkdir(BasePathCmd):
     __sots__ = []
 
     def __init__(self, path):
-        super(Mkdir, self).__init__('mkdir', path)
+        super().__init__('mkdir', path)
 
     def parents(self):
         self._opts.append('-p')
@@ -68,7 +70,7 @@ class Mktemp(BasePathCmd):
     def __init__(self, path=None):
         if path is None:
             path = 'XXXXX'
-        super(Mktemp, self).__init__('mktemp', path)
+        super().__init__('mktemp', path)
 
     def directory(self):
         self._opts.append('--directory')
@@ -90,7 +92,7 @@ class Stat(BasePathCmd):
     __sots__ = []
 
     def __init__(self, file_name):
-        super(Stat, self).__init__('stat', file_name)
+        super().__init__('stat', file_name)
         self._opts = ['-t']
 
 
@@ -98,17 +100,54 @@ class Touch(BasePathCmd):
     __slots__ = []
 
     def __init__(self, file_name):
-        super(Touch, self).__init__('touch', file_name)
+        super().__init__('touch', file_name)
 
 
 class Cat(BasePathCmd):
     __slots__ = []
 
-    def __init__(self, file_name):
-        super(Cat, self).__init__('cat', file_name)
+    def __init__(self, file_name: Union[str, List]):
+        super().__init__('cat', file_name)
+
+    @property
+    def opts(self):
+        return self._opts + self._path if isinstance(self._path, list) else [self._path]
 
 
-class RecursiveMixin(object):
+class FindFileType(enum.Enum):
+    BLOCK = 'b'  # block (buffered) special
+    CHARACTER = 'c'  # character (unbuffered) special
+    DIRECTORY = 'd'  # directory
+    PIPE = 'p'  # named pipe (FIFO)
+    FILE = 'f'  # regular file
+    SYMLINK = 'l'  # symbolic link; this is never true if the -L option or the -follow option is in effect, unless the symbolic link is broken.  If you want to search for symbolic links when -L is in effect, use -xtype.
+    SOCKET = 's'  # socket
+
+
+class Find(BasePathCmd):
+    __slots__ = []
+
+    def __init__(self, path: str):
+        super().__init__('find', path)
+
+    @property
+    def opts(self):
+        return [self._path] + self._opts
+
+    def name(self, pattern: str):
+        self._opts.append(LongOpt('-name', pattern, delim=' '))
+        return self
+
+    def iname(self, pattern: str):
+        self._opts.append(LongOpt('-iname', pattern, delim=' '))
+        return self
+
+    def type(self, ftype: Union[FindFileType, str]):
+        self._opts.append(LongOpt('-type', ftype.value if isinstance(ftype, FindFileType) else ftype, delim=' '))
+        return self
+
+
+class RecursiveMixin:
     __slots__ = []
 
     def recursive(self):
@@ -120,7 +159,7 @@ class Chown(BasePathCmd, RecursiveMixin):
     __slots__ = []
 
     def __init__(self, path, owner, group=None):
-        super(Chown, self).__init__('chown', path)
+        super().__init__('chown', path)
         if group is not None:
             self._opts.append('{}:{}'.format(owner, group))
         else:
@@ -131,7 +170,7 @@ class Chgrp(BasePathCmd, RecursiveMixin):
     __slots__ = []
 
     def __init__(self, path, group):
-        super(Chgrp, self).__init__('chgrp', path)
+        super().__init__('chgrp', path)
         self._opts.append(group)
 
 
@@ -139,11 +178,11 @@ class Chmod(BasePathCmd, RecursiveMixin):
     __slots__ = []
 
     def __init__(self, path, mode):
-        super(Chmod, self).__init__('chmod', path)
+        super().__init__('chmod', path)
         self._opts.append(mode)
 
 
-class RecursiveMixinLower(object):
+class RecursiveMixinLower:
     __slots__ = []
 
     def recursive(self):
@@ -155,18 +194,18 @@ class Rm(BasePathCmd, RecursiveMixinLower):
     __slots__ = []
 
     def __init__(self, path):
-        super(Rm, self).__init__('rm', ShellPath(path))
+        super().__init__('rm', ShellPath(path))
 
     def force(self):
         self._opts.append('-f')
         return self
 
 
-class Mv(BasePathCmd, RecursiveMixinLower):
+class Mv(BasePathCmd):
     __slots__ = ['_dst']
 
     def __init__(self, path, dst):
-        super(Mv, self).__init__('mv', path)
+        super().__init__('mv', path)
         self._dst = dst
 
     @property
@@ -174,11 +213,11 @@ class Mv(BasePathCmd, RecursiveMixinLower):
         return self._opts + [self._path, self._dst]
 
 
-class Cp(Mv):
+class Cp(Mv, RecursiveMixinLower):
     __slots__ = []
 
     def __init__(self, path, dst):
-        super(Cp, self).__init__(path, dst)
+        super().__init__(path, dst)
         self.cmd = 'cp'
 
 
@@ -186,7 +225,7 @@ class Ln(BasePathCmd):
     __slots__ = ['_name']
 
     def __init__(self, path, name=None):
-        super(Ln, self).__init__('ln', path)
+        super().__init__('ln', path)
         if name is None:
             self._name = os.path.basename(path)
 
@@ -208,7 +247,7 @@ class Wget(Cmd):
     __slots__ = ['_url', '_out']
 
     def __init__(self, url):
-        super(Wget, self).__init__('wget')
+        super().__init__('wget')
         self._url = url
         self._out = None
 
@@ -229,7 +268,7 @@ class Grep(BasePathCmd):
     __slots__ = ['_pat', '_regexp', '_case']
 
     def __init__(self, pattern, path=None):
-        super(Grep, self).__init__('grep', path)
+        super().__init__('grep', path)
         self._pat = pattern
         self._regexp = False
         self._case = False
@@ -283,7 +322,7 @@ class Sed(BasePathCmd):
     __slots__ = ['_pat', '_repl', '_case', '_limit']
 
     def __init__(self, pattern, replacement, path=None):
-        super(Sed, self).__init__('sed', path)
+        super().__init__('sed', path)
         self._pat = pattern
         self._repl = replacement
         self._limit = None
@@ -342,7 +381,7 @@ class Diff(Cmd):
     __slots__ = ['_files']
 
     def __init__(self):
-        super(Diff, self).__init__('diff')
+        super().__init__('diff')
         self._files = []
 
     def unified(self, num=None):
