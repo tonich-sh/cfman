@@ -2,6 +2,7 @@
 import copy
 
 from enum import Enum
+from pathlib import Path
 
 from shlex import quote
 from .compiler import compiler
@@ -15,6 +16,11 @@ def compile_str(compiler, cmd, ctx, state):
 @compiler.when(Enum)
 def compile_enum(compiler, cmd, ctx, state):
     state.opts.append(str(cmd.value))
+
+
+@compiler.when(Path)
+def compile_path(compiler, cmd, ctx, state):
+    state.opts.append(str(cmd))
 
 
 class Opt:
@@ -38,7 +44,7 @@ class LongOpt(Opt):
     __slots__ = []
 
     def __init__(self, name: str, value, delim='='):
-        super(LongOpt, self).__init__(name, value, delim)
+        super().__init__(name, value, delim)
 
 
 class Pipe:
@@ -70,7 +76,7 @@ class OutputRedirect(Pipe):
     __slots__ = []
 
     def __init__(self, _from, _to):
-        super(OutputRedirect, self).__init__(_from, _to)
+        super().__init__(_from, _to)
         self._redir = '>'
 
 
@@ -78,7 +84,7 @@ class OutputRedirectAppend(Pipe):
     __slots__ = []
 
     def __init__(self, _from, _to):
-        super(OutputRedirectAppend, self).__init__(_from, _to)
+        super().__init__(_from, _to)
         self._redir = '>>'
 
 
@@ -139,7 +145,7 @@ class Subcommand(Cmd):
     __slots__ = ['_parent', '_global_opts']
 
     def __init__(self, cmd, parent):
-        super(Subcommand, self).__init__(cmd)
+        super().__init__(cmd)
         self._parent = parent
         self._global_opts = []
 
@@ -175,7 +181,7 @@ class CommandWrap(Cmd):
     __slots__ = ['_cmd']
 
     def __init__(self, wrapper):
-        super(CommandWrap, self).__init__(wrapper)
+        super().__init__(wrapper)
 
     def command(self, cmd: Cmd):
         self._cmd = cmd
