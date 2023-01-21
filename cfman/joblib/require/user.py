@@ -1,9 +1,19 @@
+from typing import Optional, List
 
-from cfman.joblib.user import user_exists, group_exists, get_user_data
 from cfman.cmdbuilder.commands.user import Useradd, Groupadd, Usermod, Userdel
+from cfman.executor.context import Context
+from cfman.joblib.user import (
+    user_exists, group_exists,
+    get_group_data, get_user_data,
+)
 
 
-def user(ctx, name, uid=None, home_dir=None, shell=None, gid=None, password_hash=None, **kwargs):
+def user(
+        ctx: Context, name: str, uid=None, home_dir=None,
+        shell=None, gid=None, password_hash=None,
+        groups: Optional[List] = None,
+        uid_min=None,
+    ):
     do = False
     if not user_exists(ctx, name):
         cmd = Useradd(name)
@@ -18,23 +28,27 @@ def user(ctx, name, uid=None, home_dir=None, shell=None, gid=None, password_hash
             cmd.group(gid)
         if password_hash is not None:
             cmd.password(password_hash)
+        if groups is not None:
+            cmd.groups(groups)
+        if uid_min is not None:
+            cmd = cmd.config().uid_min(uid_min)
         do = True
     else:
         """
-        {'name': 'user', 
-        'password': 'x', 
-        'uid': '1000', 
-        'gid': '1000', 
-        'gecos': 'user,,,', 
-        'home_dir': '/home/user', 
-        'shell': '/bin/bash', 
-        'encrypted_password': '$6$O19cUGGsELOqR1rA$Y6Ujo35JwuP/WhslyjuV/JZLAIJDMsFoNun4jLTtE554wUdwEyvtOgYk.Iyu2EkTKNrdBq1g4y6H7xWaXfBB81', 
-        'last_change': '18359', 
-        'min_age': '0', 
-        'max_age': '99999', 
-        'warn_period': '7', 
-        'inactivity_period': '', 
-        'exp_date': '', 
+        {'name': 'user',
+        'password': 'x',
+        'uid': '1000',
+        'gid': '1000',
+        'gecos': 'user,,,',
+        'home_dir': '/home/user',
+        'shell': '/bin/bash',
+        'encrypted_password': '$6$O19cUGGsELOqR1rA$Y6Ujo35JwuP/WhslyjuV/JZLAIJDMsFoNun4jLTtE554wUdwEyvtOgYk.Iyu2EkTKNrdBq1g4y6H7xWaXfBB81',
+        'last_change': '18359',
+        'min_age': '0',
+        'max_age': '99999',
+        'warn_period': '7',
+        'inactivity_period': '',
+        'exp_date': '',
         'reserved': ''}
         """
         user_data = get_user_data(ctx, name)
@@ -46,14 +60,18 @@ def user(ctx, name, uid=None, home_dir=None, shell=None, gid=None, password_hash
             if isinstance(gid, str) and gid.isnumeric():
                 gid = int(gid)
             else:
-                # TODO: load group data and extract numeric gid
-                raise Exception('non numeric gid is not supported yet')
+                group_data = get_group_data(ctx, gid)
+                if not group_data:
+                    raise Exception(f'Group "{gid}" not found')
+                gid = int(group_data['gid'])
             if int(user_data.get('gid', 0)) != gid:
                 do = True
                 cmd.group(gid)
+        if groups is not None:
+            cmd.groups(groups)
         if home_dir is not None and user_data.get('home_dir', None) != home_dir:
             do = True
-            cmd.home_dir(home_dir)
+            cmd.home_dir(home_dir).move_home()
         if shell is not None and user_data.get('shell', None) != shell:
             do = True
             cmd.shell(shell)
