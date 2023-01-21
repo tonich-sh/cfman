@@ -1,20 +1,20 @@
 
 import abc
-import os
 import copy
-import pwd
-import signal
-import shlex
 import logging
-from subprocess import Popen, PIPE
+import os
+import pwd
+import shlex
+import signal
 from contextlib import contextmanager
+from pathlib import PurePath
+from subprocess import PIPE, Popen
 from typing import List, Union
 
 from cfman.cmdbuilder.cmd import Cmd, CommandChain, CommandWrap
-from cfman.cmdbuilder.commands import sudo, file
+from cfman.cmdbuilder.commands import file, sudo
 from cfman.cmdbuilder.compiler import compiler
 from cfman.executor.connector.paramiko import ParamikoConnection
-
 
 logger = logging.getLogger(__name__)
 
@@ -192,8 +192,8 @@ class Remote(Context):
         :param remote:
         :return:
         """
-        if isinstance(local, str) and os.path.isdir(local):
-            self.connection.put_dir(local, remote)
+        if isinstance(local, (str, PurePath)) and os.path.isdir(local):
+            self.connection.put_dir(str(local), str(remote))
             return TransferResult(
                 local,
                 remote,
@@ -202,7 +202,9 @@ class Remote(Context):
                 context=self
             )
         else:
-            self.connection.put_file(local, remote)
+            if isinstance(local, PurePath):
+                local = str(local)
+            self.connection.put_file(local, str(remote))
             return TransferResult(
                 local,
                 remote,
