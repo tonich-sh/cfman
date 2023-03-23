@@ -19,11 +19,25 @@ class AptGet(Cmd):
 
     def install(self, *pkgs):
         self._opts.append('install')
-        self._opts += list(pkgs)
+        self._pkgs = list(pkgs)
         return self
 
     def update(self):
         self._opts.append('update')
+        return self
+
+    def autoremove(self):
+        self._opts.append('autoremove')
+        return self
+
+    def purge(self, *pkgs):
+        self._opts.append('purge')
+        self._pkgs = list(pkgs)
+        return self
+
+    def remove(self, *pkgs):
+        self._opts.append('remove')
+        self._pkgs += list(pkgs)
         return self
 
 

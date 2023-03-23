@@ -1,23 +1,31 @@
 
 import os
 
-from cfman.executor.context import Result
+from cfman.executor.context import Context, Result
 from cfman.cmdbuilder.commands import deb, file, gpg
 from cfman.joblib import file as file_job
 
 
-def installed(ctx, pkg):
+def installed(ctx: Context, pkg):
     res = ctx.run(deb.Dpkg(pkg).status().pipe(file.Grep('Status:').case()))
     if 'installed' in res.stdout.strip().split(' '):
         return True
     return False
 
 
-def install(ctx, packages, update=False):
+def install(ctx: Context, packages, update=False):
     if update:
         if not ctx.run(deb.AptGet().update(), warn=True).ok:
             return Result('', '', 1)
     return ctx.run(deb.AptGet().install(*packages), warn=True)
+
+
+def remove(ctx: Context, packages: list, purge: bool = False):
+    if purge:
+        _command = deb.AptGet().purge
+    else:
+        _command = deb.AptGet().remove
+    return ctx.run(_command(*packages), warn=True)
 
 
 def apt_key_exists(ctx, fingerprint):
