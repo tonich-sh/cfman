@@ -8,6 +8,7 @@ from typing import Union
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.config import SSH_PORT
 from paramiko.agent import AgentRequestHandler
+from paramiko.transport import ServiceRequestingTransport
 
 from . import BaseConnection
 
@@ -40,7 +41,9 @@ class ParamikoConnection(BaseConnection):
             self._port,
             self.user,
             allow_agent=True,
-            timeout=timeout
+            timeout=timeout,
+            transport_factory=ServiceRequestingTransport
+            # disabled_algorithms={'pubkeys': ['rsa-sha2-512', 'rsa-sha2-256']}
         )
 
     def close(self):

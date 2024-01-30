@@ -13,7 +13,7 @@ def user(
         shell=None, gid=None, password_hash=None,
         groups: Optional[List] = None,
         uid_min=None,
-    ):
+):
     do = False
     if not user_exists(ctx, name):
         cmd = Useradd(name)
