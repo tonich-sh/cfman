@@ -9,7 +9,7 @@ import signal
 from contextlib import contextmanager
 from pathlib import PurePath
 from subprocess import PIPE, Popen
-from typing import List, Union
+from typing import List, Optional, Union
 
 from cfman.cmdbuilder.cmd import Cmd, CommandChain, CommandWrap
 from cfman.cmdbuilder.commands import file, sudo
@@ -97,9 +97,9 @@ class Context(object):
         raise NotImplementedError
 
     @contextmanager
-    def belong(self, user: str):
+    def belong(self, user: str, shell: Optional[str] = None):
         if self.user != user:
-            self.command_wrap = sudo.Su(user).shell('/bin/sh')
+            self.command_wrap = sudo.Su(user).shell(shell) if shell else sudo.Su(user)
         # else:
         #     self.command_wrap = sudo.Sudo(user)
         yield self.command_wrap
