@@ -22,7 +22,11 @@ class Psql(Cmd):
     def __init__(self):
         super(Psql, self).__init__('psql')
 
-    def command(self, statement):
+    def command(self, statement: str):
         self._opts.append('--command')
         self._opts.append(PsqlQuote(statement))
+        return self
+
+    def database(self, database: str):
+        self._opts.append(database)
         return self
