@@ -60,3 +60,16 @@ def change_owner(ctx: Context, database: str, owner: str):
     sql = f'ALTER DATABASE {database} OWNER TO {owner}'
     with ctx.belong('postgres'):
         ctx.run(Psql().command(sql + ';'))
+
+
+def get_tables(ctx: Context, database: str, schema: str | None = None):
+    sql = 'SELECT table_schema, table_name FROM information_schema.tables'
+    if schema is not None:
+        sql += f" WHERE table_schema = '{schema}'"
+    sql += ' ORDER BY table_schema, table_name'
+    sql_csv = f'COPY ({sql}) TO stdout (format CSV)'
+    with ctx.belong('postgres'):
+        result = ctx.run(Psql().database(database).command(sql_csv))
+    assert result.ok, result.stderr
+    reader = csv.reader(io.StringIO(result.stdout), delimiter=',')
+    return {(row[0], row[1]) for row in reader}
