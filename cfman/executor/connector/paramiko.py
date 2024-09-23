@@ -1,6 +1,5 @@
 
 import os
-import sys
 import select
 import logging
 from typing import Union
@@ -21,21 +20,25 @@ class ParamikoConnection(BaseConnection):
 
         self.host = None
         self.user = 'root'
-
-        host = kwargs.get('host', None)
+        self._port = SSH_PORT
+        host = kwargs.get('host')
         if host:
             splitted = host.split('@')
-            self.host = splitted.pop(-1)
+            host = splitted.pop(-1)
             if splitted:
                 self.user = splitted[-1]
-        self._port = SSH_PORT
+            splitted = host.split(':')
+            host = splitted.pop(0)
+            if splitted:
+                self._port = int(splitted[0])
+        self.host = host
 
     def connect(self):
         logging.getLogger('paramiko').setLevel(logging.ERROR)
         self._ssh = SSHClient()
         self._ssh.set_missing_host_key_policy(AutoAddPolicy())
         self._ssh.load_system_host_keys()
-        timeout = self._kwargs.get('timeout', None)
+        timeout = self._kwargs.get('timeout')
         self._ssh.connect(
             self.host,
             self._port,
