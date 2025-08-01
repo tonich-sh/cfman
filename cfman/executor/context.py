@@ -98,7 +98,9 @@ class Context(object):
 
     @contextmanager
     def belong(self, user: str, shell: Optional[str] = None):
-        if self.user != user:
+        if self.user != user and user == 'root':
+            self.command_wrap = sudo.Sudo()
+        elif self.user != user:
             self.command_wrap = sudo.Su(user).shell(shell) if shell else sudo.Su(user)
         # else:
         #     self.command_wrap = sudo.Sudo(user)
@@ -167,6 +169,7 @@ class Local(Context):
         is_file_object = hasattr(local, 'seek') and callable(local.seek)
 
         if is_file_object:
+            # TODO: make this works with sudo
             open(remote, 'wb').write(local.getvalue())
         else:
             self.run(file.Cp(local, remote).recursive())

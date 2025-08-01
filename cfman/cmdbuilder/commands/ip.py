@@ -7,6 +7,11 @@ class IpAddress(Subcommand):
         super(IpAddress, self).__init__('address', ip)
 
 
+class Route(Subcommand):
+    def __init__(self, ip):
+        super(Route, self).__init__('route', ip)
+
+
 class Ip(Cmd):
     __slots__ = []
 
@@ -16,3 +21,6 @@ class Ip(Cmd):
 
     def address(self):
         return IpAddress(self)
+
+    def route(self):
+        return Route(self)

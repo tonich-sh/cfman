@@ -17,3 +17,7 @@ class Mysql(Cmd):
     def silent(self):
         self._opts.append(LongOpt('--silent', None))
         return self
+
+    def skip_column_names(self):
+        self._opts.append(LongOpt('--skip-column-names', None))
+        return self

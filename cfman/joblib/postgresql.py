@@ -6,7 +6,7 @@ from cfman.cmdbuilder.commands.postgresql import Psql
 from cfman.executor.context import Context
 
 
-def get_users(ctx: Context) -> list[str]:
+def get_users(ctx: Context) -> set[str]:
     sql = '''COPY (SELECT usename as role_name
 FROM pg_catalog.pg_user
 ORDER BY role_name) TO stdout (format CSV);'''
@@ -33,7 +33,7 @@ def change_password(ctx: Context, username: str, password: str):
         ctx.run(Psql().command(sql + ';'))
 
 
-def get_databases(ctx: Context):
+def get_databases(ctx: Context) -> set[str]:
     sql = 'COPY (SELECT datname FROM pg_database WHERE datistemplate = false) TO stdout (format CSV)'
     with ctx.belong('postgres'):
         result = ctx.run(Psql().command(sql))
@@ -62,7 +62,7 @@ def change_owner(ctx: Context, database: str, owner: str):
         ctx.run(Psql().command(sql + ';'))
 
 
-def get_tables(ctx: Context, database: str, schema: str | None = None):
+def get_tables(ctx: Context, database: str, schema: str | None = None) -> set[str]:
     sql = 'SELECT table_schema, table_name FROM information_schema.tables'
     if schema is not None:
         sql += f" WHERE table_schema = '{schema}'"
